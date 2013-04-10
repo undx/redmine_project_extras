@@ -1,0 +1,3 @@
+module SettingsControllerPatch
+
+end

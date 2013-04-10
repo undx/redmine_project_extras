@@ -1,0 +1,50 @@
+<div id="project_extras_settings">
+<% @project_extras_settings = ProjectExtrasSetting.find_or_create_by_project_id(@project.id) %>
+<%= labelled_form_for :settings, @project_extras_setting,
+    :url => {:controller => 'project_extras', :action => 'edit', :project_id => @project, :tab => 'project_extras',
+    :setting_id => @project_extras_settings.id}, :html => {:id => 'project_extras' } do |f| %>
+  <%= error_messages_for 'project_extras' %>
+  <div class="box tabular">
+    <h4><%= l(:auto_assign) %> </h4>
+    <p>
+      <%= content_tag(:label, l(:default_assigned_to))%>
+      <% options = options_for_select(@project.assignable_users.map {|u| [u.lastname, u.id]} , @project_extras_settings.default_assigned_to_id) %>
+      <%= f.select :default_assigned_to_id, options %>
+    </p>
+    <h4> <%= l(:default_issue_status_message) %></h4>
+    <p>
+    <label><%=l(:send_when_update)%></label>
+    <% swu_options = options_for_select([["Enabled", true], ["Disabled", false]], @project_extras_settings.send_when_update) %>
+    <%= f.select :send_when_update, swu_options %>
+    </p>
+    <p>
+    <label><%=l(:include_default_message)%></label>
+    <% ena_options = options_for_select([["Enabled", true], ["Disabled", false]], @project_extras_settings.include_default_issue_status_message) %>
+    <%= f.select :include_default_issue_status_message, ena_options %>
+    </p>
+      <p>
+      <label>Message</label>
+      <%=text_area_tag 'settings[default_issue_status_message]', @project_extras_settings.default_issue_status_message, :size =>"60x3", :class => 'iki-edit' %><br/>
+      </p>
+      <h4> <%= l(:issue_status_messages)%></h4>
+      <p><label><%=l(:label_issue_status)%></label></p>
+      <% existing_status = [] %>
+      <% for pm in @project_extras_settings.project_extras_status_messages.order(:status_id) do  %>
+        <% existing_status << pm.status_id %>
+        <p>
+        <label><%= IssueStatus.find(pm.status_id).name %> </label>
+        <%= text_area_tag "settings[project_extras_status_messages][#{pm.id}]", pm.message, :size => "60x3" %>
+        </p>
+      <% end %>
+      <p>
+      <label><%=l(:label_add_issue_status)%></label>
+      <% statuses = IssueStatus.all.collect(&:id) %>
+      <% remaining_status = statuses - existing_status %>
+      <% status_options = options_for_select(IssueStatus.find(remaining_status).map {|i| [i.name, i.id]})%>
+        <%= select_tag :new_status_message, status_options, :prompt => 'Select a status' %>
+        <%= submit_tag '', :class=> 'icon icon-add' %>
+      </p>
+      </div>
+  <%= submit_tag l(:button_save)%>
+<%end%>
+</div>
